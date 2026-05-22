@@ -505,7 +505,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
 /* ================================================================
    CONFIG
    ================================================================ */
-const AT_TOKEN = localStorage.getItem('vaca_token') || '';
+const AT_TOKEN = 'patL7CNowNHoX6pAw.7e4c7e6fadbefbfc0da8e2108d0c4557dc8e12d361933a437d2bec585ec03591';
 const AT_BASE    = 'appteOyk8MXEIgSD7';
 const AT_WORKERS = 'Trabajadores';
 const AT_SOLS    = 'SolicitudesVacaciones';
@@ -1083,29 +1083,12 @@ function clearSetup() {
    INIT
    ================================================================ */
 (async()=>{
-  // Token embebido como fallback — los trabajadores nunca ven el setup
-  const FALLBACK_TOKEN = atob('cGF0TDdDTm93TkhvWDZwQXcuN2U0YzdlNmZhZGJlZmJmYzBkYThlMjEwOGQwYzQ1NTdkYzhlMTJkMzYxOTMzYTQzN2QyYmVjNTg1ZWMwMzU5MQ==');
-  if (!localStorage.getItem('vaca_token')) {
-    localStorage.setItem('vaca_token', FALLBACK_TOKEN);
-  }
-  const token = localStorage.getItem('vaca_token');
-  if (!token) {
-    showScreen('screen-setup');
-    return;
-  }
   try{
     await loadAllData();
     showToast('✅ Datos cargados','success');
   } catch(e){
     hideLoading();
-    // Si el token es inválido, mostrar setup de nuevo
-    if (e.message.includes('403') || e.message.includes('401') || e.message.includes('invalid')) {
-      localStorage.removeItem('vaca_token');
-      showToast('Token inválido. Vuelve a configurar.','error');
-      setTimeout(()=>showScreen('screen-setup'), 1500);
-    } else {
-      showToast('Error Airtable: '+e.message,'error');
-    }
+    showToast('Error Airtable: '+e.message,'error');
   }
 })();
 </script>
