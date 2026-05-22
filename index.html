@@ -269,7 +269,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
               onkeydown="if(event.key==='Enter')loginAdmin()">
             <button class="input-eye" onclick="togglePwd('admin-password',this)" type="button">👁️</button>
           </div>
-          <div style="font-size:11px;color:var(--text-soft);margin-top:5px;">Demo: <span style="font-family:var(--mono)">admin123</span></div>
+          
         </div>
         <button class="btn btn-primary" onclick="loginAdmin()">Ingresar como Admin →</button>
       </div>
@@ -513,6 +513,7 @@ const AT_API     = 'https://api.airtable.com/v0';
 const ADMIN_PWD  = 'admin123';
 const ADMIN_EMAIL= 'Sindyolea@gmail.com';
 const ADMIN_WSP  = '56982925495';
+const APP_URL    = 'https://RRHH-docpopcorn.github.io/vacaciones-dpc';
 
 // Make.com webhooks — pega las URLs cuando las tengas
 const MAKE_SOLICITUD  = 'https://hook.us2.make.com/11sh19n4f7o81p4jrhjhn2fnqf4ls3bp';
@@ -670,7 +671,8 @@ async function notifySolicitud(w, sol) {
     tipo: 'nueva_solicitud', remitente: remitente(w.local),
     trabajador: { nombre:w.nombre, rut:w.rut, local:w.local, mail:w.mail, celular:w.celular },
     solicitud: { inicio:sol.fechaInicio, fin:sol.fechaFin, dias:sol.diasSolicitados, comentario:sol.comentarioTrabajador },
-    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP }
+    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP },
+    appUrl: APP_URL
   });
 }
 
@@ -680,7 +682,8 @@ async function notifyResolucion(w, sol) {
     trabajador: { nombre:w.nombre, rut:w.rut, local:w.local, mail:w.mail, celular:w.celular },
     solicitud: { inicio:sol.fechaInicio, fin:sol.fechaFin, dias:sol.diasSolicitados },
     comentarioAdmin: sol.comentarioAdmin,
-    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP }
+    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP },
+    appUrl: APP_URL
   });
 }
 
