@@ -329,7 +329,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
           <input class="form-control" type="date" id="w-fecha-fin" onchange="calcDays()">
         </div>
         <div class="form-group">
-          <label class="form-label">Días hábiles solicitados</label>
+          <label class="form-label">Días solicitados</label>
           <input class="form-control" type="number" id="w-dias-sol" min="1" readonly
             style="background:var(--surface2);font-family:var(--mono);font-weight:700;font-size:16px;">
         </div>
@@ -622,12 +622,12 @@ function calcVac(w) {
 function fmtDate(d) { if(!d) return '—'; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
 
 function bizDays(s, e) {
+  // Cuenta TODOS los días — equipo trabaja en turnos rotativos 7 días
   if (!s||!e) return 0;
   const start=new Date(s), end=new Date(e);
   if (end<start) return 0;
-  let c=0, cur=new Date(start);
-  while(cur<=end){if(cur.getDay()!==0&&cur.getDay()!==6)c++;cur.setDate(cur.getDate()+1);}
-  return c;
+  const diff = Math.round((end-start)/(1000*60*60*24)) + 1;
+  return diff;
 }
 
 function initials(n) { const p=n.split(' '); return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase(); }
