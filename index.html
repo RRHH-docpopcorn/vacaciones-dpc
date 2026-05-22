@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VacaApp — Gestión de Vacaciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F2F5F7;--surface:#FFFFFF;--surface2:#EDF1F4;--border:#DDE3E9;
+  --teal:#1A7F6E;--teal-light:#E6F4F1;--teal-mid:#2DA891;
+  --text:#1C2B33;--text-mid:#4A5F6B;--text-soft:#8399A5;
+  --yellow:#F59E0B;--yellow-bg:#FFFBEB;--yellow-border:#FCD34D;
+  --green:#059669;--green-bg:#ECFDF5;--green-border:#6EE7B7;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-border:#FCA5A5;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 2px 12px rgba(26,127,110,0.08),0 1px 3px rgba(0,0,0,0.06);
+  --shadow-lg:0 8px 32px rgba(26,127,110,0.12),0 2px 8px rgba(0,0,0,0.08);
+  --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+.screen{display:none;}.screen.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+.logo{display:flex;align-items:center;gap:10px;}.logo-icon{width:36px;height:36px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.logo-text{font-size:17px;font-weight:700;color:var(--teal);letter-spacing:-0.3px;}
+.header-btn{background:none;border:none;padding:8px 14px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;color:var(--text-mid);transition:all .2s;}
+.header-btn:hover{background:var(--surface2);color:var(--teal);}
+.container{max-width:480px;margin:0 auto;padding:20px 16px 100px;}
+.container.wide{max-width:700px;}
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-0.4px;}
+.page-subtitle{font-size:13px;color:var(--text-soft);margin-bottom:24px;}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:14px;border:1px solid var(--border);animation:fadeUp .3s ease both;}
+.card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-soft);margin-bottom:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.stat-box{background:var(--surface2);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;}
+.stat-box.accent{background:var(--teal-light);}
+.stat-num{font-size:26px;font-weight:700;color:var(--teal);line-height:1;font-family:var(--mono);}
+.stat-label{font-size:11px;color:var(--text-soft);margin-top:4px;font-weight:500;}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--surface2);gap:12px;}
+.info-row:last-child{border-bottom:none;}
+.info-label{font-size:12px;color:var(--text-soft);font-weight:500;flex-shrink:0;min-width:120px;}
+.info-value{font-size:13px;color:var(--text);font-weight:500;text-align:right;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-pending{background:var(--yellow-bg);color:#92400E;border:1px solid var(--yellow-border);}
+.badge-approved{background:var(--green-bg);color:#065F46;border:1px solid var(--green-border);}
+.badge-rejected{background:var(--red-bg);color:#991B1B;border:1px solid var(--red-border);}
+.badge-active{background:var(--teal-light);color:var(--teal);border:1px solid #A7D7D0;}
+.badge-inactive{background:var(--surface2);color:var(--text-soft);border:1px solid var(--border);}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:6px;letter-spacing:.2px;}
+.form-control{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);transition:border-color .2s,box-shadow .2s;outline:none;-webkit-appearance:none;}
+.form-control:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,127,110,.1);}
+.form-control::placeholder{color:var(--text-soft);}
+textarea.form-control{resize:vertical;min-height:80px;}
+.input-wrap{position:relative;}
+.input-wrap .form-control{padding-left:42px;padding-right:44px;}
+.input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-soft);pointer-events:none;}
+.input-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-soft);padding:4px;}
+.search-wrap .form-control{padding-left:42px;padding-right:14px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:13px 22px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-primary{background:var(--teal);color:#fff;width:100%;}
+.btn-primary:hover:not(:disabled){background:var(--teal-mid);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);}
+.btn-ghost{background:none;border:none;color:var(--teal);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);padding:4px 0;display:inline-block;}
+.btn-approve{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green-border);padding:8px 14px;font-size:13px;border-radius:8px;}
+.btn-approve:hover{background:#D1FAE5;}
+.btn-reject{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-border);padding:8px 14px;font-size:13px;border-radius:8px;}
+.btn-reject:hover{background:#FEE2E2;}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-danger{background:var(--red);color:#fff;}
+.solicitud-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;transition:box-shadow .2s;}
+.solicitud-card:hover{box-shadow:var(--shadow);}
+.solicitud-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.solicitud-name{font-size:14px;font-weight:600;}
+.solicitud-sub{font-size:12px;color:var(--text-soft);margin-top:2px;}
+.solicitud-dates{display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap;}
+.date-chip{background:var(--surface2);border-radius:6px;padding:4px 9px;font-family:var(--mono);font-size:12px;font-weight:500;}
+.days-badge{background:var(--teal-light);color:var(--teal);border-radius:6px;padding:4px 9px;font-size:12px;font-weight:700;font-family:var(--mono);margin-left:auto;}
+.comment-box{background:var(--surface2);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--text-mid);margin:8px 0 0;font-style:italic;line-height:1.5;}
+.solicitud-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.worker-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.worker-row:hover{box-shadow:var(--shadow);border-color:var(--teal-mid);}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.worker-info{flex:1;min-width:0;}
+.worker-name-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.worker-fullname{font-size:14px;font-weight:600;}
+.worker-meta{font-size:12px;color:var(--text-soft);margin-top:2px;}
+.worker-days{text-align:right;flex-shrink:0;}
+.worker-days-num{font-size:20px;font-weight:700;color:var(--teal);font-family:var(--mono);line-height:1;}
+.worker-days-label{font-size:10px;color:var(--text-soft);font-weight:500;}
+.login-screen{min-height:100vh;background:linear-gradient(160deg,#F0F8F6 0%,#E8F2F0 50%,#F2F5F7 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.login-logo{width:68px;height:68px;background:var(--teal);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px;box-shadow:0 8px 24px rgba(26,127,110,.25);}
+.login-app-name{font-size:28px;font-weight:700;color:var(--teal);letter-spacing:-0.5px;margin-bottom:4px;}
+.login-tagline{font-size:14px;color:var(--text-soft);margin-bottom:32px;text-align:center;}
+.login-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px 24px;width:100%;max-width:380px;border:1px solid var(--border);}
+.login-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:22px;}
+.login-tab{padding:9px;text-align:center;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;color:var(--text-soft);transition:all .2s;border:none;background:none;font-family:var(--font);}
+.login-tab.active{background:var(--surface);color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.login-section{display:none;}.login-section.active{display:block;}
+.login-step{display:none;}.login-step.active{display:block;}
+.back-btn{background:none;border:none;color:var(--teal);font-size:13px;cursor:pointer;font-family:var(--font);padding:0;margin-bottom:16px;display:flex;align-items:center;gap:4px;font-weight:600;}
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px;}
+.tab{flex:1;padding:9px 4px;text-align:center;font-size:11px;font-weight:600;border-radius:8px;cursor:pointer;color:var(--text-soft);transition:all .2s;border:none;background:none;font-family:var(--font);}
+.tab.active{background:var(--surface);color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+.search-bar{position:relative;margin-bottom:14px;}
+.search-bar .search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft);font-size:16px;pointer-events:none;}
+.search-bar .form-control{padding-left:38px;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-soft);font-family:var(--font);transition:all .2s;}
+.filter-chip.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-soft);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+.empty-text{font-size:14px;font-weight:500;}
+.empty-sub{font-size:12px;margin-top:4px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;animation:slideUp .3s ease;}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px;letter-spacing:-0.3px;}
+.modal-close{float:right;background:var(--surface2);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;line-height:28px;text-align:center;margin-top:-4px;}
+.edit-days-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.edit-days-input{width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:14px;text-align:center;outline:none;}
+.edit-days-input:focus{border-color:var(--teal);}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:#fff;padding:12px 22px;border-radius:30px;font-size:13px;font-weight:500;z-index:500;transition:transform .35s cubic-bezier(.34,1.56,.64,1);max-width:92vw;text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+.toast.info{background:var(--teal);}
+#loading{display:none;position:fixed;inset:0;background:rgba(242,245,247,.92);z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
+#loading-text{font-size:13px;color:var(--text-soft);font-weight:500;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.06);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0;cursor:pointer;border:none;background:none;font-family:var(--font);color:var(--text-soft);transition:color .2s;}
+.nav-item.active{color:var(--teal);}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:10px;font-weight:600;margin-top:3px;}
+.nav-icon-wrap{position:relative;display:inline-block;}
+.pending-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--surface);}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.section-label{font-size:14px;font-weight:700;}
+.section-count{font-size:12px;color:var(--text-soft);background:var(--surface2);padding:3px 9px;border-radius:20px;font-weight:600;font-family:var(--mono);}
+.alert{border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
+.alert-warning{background:var(--yellow-bg);border:1px solid var(--yellow-border);color:#92400E;}
+.alert-info{background:var(--teal-light);border:1px solid #A7D7D0;color:var(--teal);}
+.make-notice{background:linear-gradient(135deg,#FFF7ED,#FFFBEB);border:1px solid #FCD34D;border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:#92400E;line-height:1.6;margin-top:12px;}
+@media(min-width:640px){.container{padding:28px 24px 80px;}}
+</style>
+</head>
+<body>
+
+
+<!-- ===== SETUP (solo admin, primera vez) ===== -->
+<div class="screen" id="screen-setup">
+  <div class="login-screen">
+    <div class="login-logo">⚙️</div>
+    <div class="login-app-name" style="font-size:22px;">Configuración inicial</div>
+    <div class="login-tagline">Solo necesitas hacer esto una vez</div>
+    <div class="login-card">
+      <div class="alert alert-info" style="margin-bottom:20px;">
+        🔐 Ingresa tu token de Airtable para conectar la app. Se guardará solo en este navegador y nadie más podrá verlo.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Token de Airtable</label>
+        <div class="input-wrap" style="position:relative;">
+          <span class="input-icon">🔑</span>
+          <input class="form-control" id="setup-token" type="password"
+            placeholder="patXXXXXX.XXXXXXXXX" style="padding-right:44px;font-family:var(--mono);font-size:12px;">
+          <button class="input-eye" onclick="togglePwd('setup-token',this)" type="button">👁️</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-soft);margin-top:6px;">
+          Encuéntralo en Airtable → Centro de creadores → Tokens de acceso personal
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveSetup()">Guardar y continuar →</button>
+      <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:10px;font-size:11px;color:var(--text-soft);line-height:1.6;">
+        ℹ️ Esta pantalla solo aparece una vez por navegador. Los trabajadores nunca la verán — ellos van directo al login normal.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="loading-text">Cargando...</div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="screen active" id="screen-login">
+  <div class="login-screen">
+    <div class="login-logo">🌴</div>
+    <div class="login-app-name">VacaApp</div>
+    <div class="login-tagline">Gestión de vacaciones del equipo</div>
+    <div class="login-card">
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="switchLoginTab('worker')">Soy Trabajador</button>
+        <button class="login-tab" onclick="switchLoginTab('admin')">Administrador</button>
+      </div>
+
+      <!-- TRABAJADOR -->
+      <div class="login-section active" id="ls-worker">
+
+        <!-- PASO 1: buscar nombre -->
+        <div class="login-step active" id="step-search">
+          <div class="form-group">
+            <label class="form-label">Busca tu nombre</label>
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input class="form-control" id="worker-search" type="text"
+                placeholder="Escribe tu nombre..." oninput="filterWorkerList(this.value)" autocomplete="off">
+            </div>
+          </div>
+          <div id="worker-suggestions" style="margin-bottom:12px;max-height:200px;overflow-y:auto;"></div>
+          <div id="worker-selected-info" style="display:none;margin-bottom:16px;">
+            <div style="background:var(--teal-light);border-radius:10px;padding:12px 14px;border:1px solid #A7D7D0;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:20px;">✓</span>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--teal);" id="worker-selected-name"></div>
+                <div style="font-size:11px;color:var(--text-soft);" id="worker-selected-local"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="goToPasswordStep()">Continuar →</button>
+        </div>
+
+        <!-- PASO 2: ingresar clave -->
+        <div class="login-step" id="step-password">
+          <button class="back-btn" onclick="goBackToSearch()">← Volver</button>
+          <div style="margin-bottom:18px;">
+            <div style="font-size:12px;color:var(--text-soft);">Ingresando como</div>
+            <div style="font-size:16px;font-weight:700;margin-top:2px;" id="step2-name">—</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tu clave de acceso</label>
+            <div class="input-wrap" style="position:relative;">
+              <span class="input-icon">🔒</span>
+              <input class="form-control" id="worker-password" type="password"
+                placeholder="Ingresa tu clave"
+                onkeydown="if(event.key==='Enter')loginWorker()">
+              <button class="input-eye" onclick="togglePwd('worker-password',this)" type="button">👁️</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-soft);margin-top:6px;">Tu clave inicial son los primeros 4 dígitos de tu RUT</div>
+          </div>
+          <button class="btn btn-primary" id="worker-login-btn" onclick="loginWorker()">Ingresar →</button>
+          <div style="text-align:center;margin-top:14px;">
+            <button class="btn-ghost" onclick="openForgotModal()">¿Olvidaste tu clave?</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="login-section" id="ls-admin">
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-wrap" style="position:relative;">
+            <span class="input-icon">🔒</span>
+            <input class="form-control" id="admin-password" type="password"
+              placeholder="Contraseña de administrador"
+              onkeydown="if(event.key==='Enter')loginAdmin()">
+            <button class="input-eye" onclick="togglePwd('admin-password',this)" type="button">👁️</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:5px;">Demo: <span style="font-family:var(--mono)">admin123</span></div>
+        </div>
+        <button class="btn btn-primary" onclick="loginAdmin()">Ingresar como Admin →</button>
+      </div>
+    </div>
+    <div style="margin-top:20px;font-size:11px;color:var(--text-soft);text-align:center;line-height:1.6;">
+      Conectado a Airtable · Datos reales del equipo
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRABAJADOR ===== -->
+<div class="screen" id="screen-worker">
+  <div class="app-header">
+    <div class="logo"><div class="logo-icon">🌴</div><span class="logo-text">VacaApp</span></div>
+    <button class="header-btn" onclick="logout()">Salir</button>
+  </div>
+  <div class="container">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--text-soft);font-weight:500;">Hola,</div>
+      <div class="page-title" id="w-greeting-name">—</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="w-stat-acum">—</div><div class="stat-label">Acumulados</div></div>
+      <div class="stat-box"><div class="stat-num" id="w-stat-used">—</div><div class="stat-label">Usados</div></div>
+      <div class="stat-box accent"><div class="stat-num" id="w-stat-avail">—</div><div class="stat-label">Disponibles</div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="wTab('info')">Mis datos</button>
+      <button class="tab" onclick="wTab('solicitar')">Solicitar</button>
+      <button class="tab" onclick="wTab('historial')">Historial</button>
+      <button class="tab" onclick="wTab('cuenta')">Cuenta</button>
+    </div>
+
+    <div class="tab-panel active" id="w-tab-info">
+      <div class="card">
+        <div class="card-title">Información laboral</div>
+        <div class="info-row"><span class="info-label">Local</span><span class="info-value" id="w-local">—</span></div>
+        <div class="info-row"><span class="info-label">Contrato</span><span class="info-value" id="w-contrato">—</span></div>
+        <div class="info-row"><span class="info-label">Inicio contrato</span><span class="info-value" id="w-inicio">—</span></div>
+        <div class="info-row"><span class="info-label">Jornada</span><span class="info-value" id="w-jornada">—</span></div>
+        <div class="info-row"><span class="info-label">Horas semanales</span><span class="info-value" id="w-horas">—</span></div>
+        <div class="info-row"><span class="info-label">Estado</span><span class="info-value" id="w-estado">—</span></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="w-tab-solicitar">
+      <div id="w-inactive-alert" class="alert alert-warning" style="display:none;">⚠️ Tu contrato está inactivo. No puedes realizar nuevas solicitudes.</div>
+      <div id="w-no-days-alert" class="alert alert-warning" style="display:none;">⚠️ No tienes días disponibles para solicitar vacaciones.</div>
+      <div class="card" id="w-form-card">
+        <div class="card-title">Nueva solicitud</div>
+        <div class="form-group">
+          <label class="form-label">Fecha de inicio</label>
+          <input class="form-control" type="date" id="w-fecha-inicio" onchange="calcDays()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de término</label>
+          <input class="form-control" type="date" id="w-fecha-fin" onchange="calcDays()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Días hábiles solicitados</label>
+          <input class="form-control" type="number" id="w-dias-sol" min="1" readonly
+            style="background:var(--surface2);font-family:var(--mono);font-weight:700;font-size:16px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Comentario (opcional)</label>
+          <textarea class="form-control" id="w-comment" placeholder="Ej: Viaje familiar..."></textarea>
+        </div>
+        <button class="btn btn-primary" id="w-submit-btn" onclick="submitRequest()">Enviar solicitud 📨</button>
+        <div class="make-notice">📧 Al enviar recibirás una notificación por correo y WhatsApp.</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="w-tab-historial">
+      <div class="card">
+        <div class="card-title">Mis solicitudes</div>
+        <div id="w-requests-list">
+          <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin solicitudes</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="w-tab-cuenta">
+      <div class="card">
+        <div class="card-title">Cambiar clave</div>
+        <div class="form-group">
+          <label class="form-label">Clave actual</label>
+          <div class="input-wrap" style="position:relative;">
+            <span class="input-icon">🔒</span>
+            <input class="form-control" id="pwd-current" type="password" placeholder="Tu clave actual">
+            <button class="input-eye" onclick="togglePwd('pwd-current',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nueva clave</label>
+          <div class="input-wrap" style="position:relative;">
+            <span class="input-icon">🔑</span>
+            <input class="form-control" id="pwd-new" type="password" placeholder="Mínimo 4 caracteres">
+            <button class="input-eye" onclick="togglePwd('pwd-new',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar nueva clave</label>
+          <div class="input-wrap" style="position:relative;">
+            <span class="input-icon">🔑</span>
+            <input class="form-control" id="pwd-confirm" type="password" placeholder="Repite la clave nueva">
+            <button class="input-eye" onclick="togglePwd('pwd-confirm',this)" type="button">👁️</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="change-pwd-btn" onclick="changePassword()">Guardar nueva clave 🔐</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="wTab('info');setNavActive(this)"><span class="nav-icon">👤</span><span class="nav-label">Perfil</span></button>
+    <button class="nav-item" onclick="wTab('solicitar');setNavActive(this)"><span class="nav-icon">✉️</span><span class="nav-label">Solicitar</span></button>
+    <button class="nav-item" onclick="wTab('historial');setNavActive(this)"><span class="nav-icon">📋</span><span class="nav-label">Historial</span></button>
+    <button class="nav-item" onclick="wTab('cuenta');setNavActive(this)"><span class="nav-icon">⚙️</span><span class="nav-label">Cuenta</span></button>
+  </nav>
+</div>
+
+<!-- ===== ADMIN ===== -->
+<div class="screen" id="screen-admin">
+  <div class="app-header">
+    <div class="logo"><div class="logo-icon">🌴</div><span class="logo-text">Admin</span></div>
+    <button class="header-btn" onclick="logout()">Salir</button>
+  </div>
+  <div class="container wide">
+    <div style="margin-bottom:20px;">
+      <div class="page-title">Panel Administrador</div>
+      <div class="page-subtitle" style="display:flex;align-items:center;justify-content:space-between;">RRHH DPC · Datos en tiempo real <button onclick="clearSetup()" style="font-size:11px;color:var(--text-soft);background:none;border:none;cursor:pointer;font-family:var(--font);">⚙️ Reconfigurar</button></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="aTab('pendientes')">
+        <span class="nav-icon-wrap">Pendientes<span id="pending-badge" class="pending-dot" style="display:none;"></span></span>
+      </button>
+      <button class="tab" onclick="aTab('trabajadores')">Equipo</button>
+      <button class="tab" onclick="aTab('historial')">Historial</button>
+    </div>
+
+    <div class="tab-panel active" id="a-tab-pendientes">
+      <div class="section-header">
+        <span class="section-label">Solicitudes pendientes</span>
+        <span class="section-count" id="a-pending-count">0</span>
+      </div>
+      <div id="a-pending-list"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Sin pendientes</div></div></div>
+    </div>
+
+    <div class="tab-panel" id="a-tab-trabajadores">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input class="form-control" type="text" placeholder="Buscar por nombre o RUT..." oninput="filterAdminWorkers(this.value)" style="padding-left:38px;">
+      </div>
+      <div class="filter-row" id="a-filter-row">
+        <button class="filter-chip active" onclick="setLocalFilter(this,'todos')">Todos</button>
+        <button class="filter-chip" onclick="setLocalFilter(this,'Plaza Oeste')">Plaza Oeste</button>
+        <button class="filter-chip" onclick="setLocalFilter(this,'Pajaritos')">Pajaritos</button>
+        <button class="filter-chip" onclick="setLocalFilter(this,'Inactivos')">Inactivos</button>
+      </div>
+      <div class="section-header">
+        <span class="section-label">Trabajadores</span>
+        <span class="section-count" id="a-workers-count">0</span>
+      </div>
+      <div id="a-workers-list"></div>
+    </div>
+
+    <div class="tab-panel" id="a-tab-historial">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input class="form-control" type="text" placeholder="Buscar solicitud..." oninput="filterAdminHistory(this.value)" style="padding-left:38px;">
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="setStatusFilter(this,'todos')">Todas</button>
+        <button class="filter-chip" onclick="setStatusFilter(this,'pendiente')">Pendientes</button>
+        <button class="filter-chip" onclick="setStatusFilter(this,'aprobada')">Aprobadas</button>
+        <button class="filter-chip" onclick="setStatusFilter(this,'rechazada')">Rechazadas</button>
+      </div>
+      <div id="a-history-list"></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="aTab('pendientes');setNavActive(this)">
+      <span class="nav-icon-wrap"><span class="nav-icon">⏳</span><span id="nav-pending-dot" class="pending-dot" style="display:none;"></span></span>
+      <span class="nav-label">Pendientes</span>
+    </button>
+    <button class="nav-item" onclick="aTab('trabajadores');setNavActive(this)"><span class="nav-icon">👥</span><span class="nav-label">Equipo</span></button>
+    <button class="nav-item" onclick="aTab('historial');setNavActive(this)"><span class="nav-icon">📊</span><span class="nav-label">Historial</span></button>
+  </nav>
+</div>
+
+<!-- MODAL WORKER DETAIL -->
+<div class="modal-overlay" id="modal-worker">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('modal-worker')">✕</button>
+    <div class="modal-title" id="modal-w-name">—</div>
+    <div id="modal-w-content"></div>
+  </div>
+</div>
+
+<!-- MODAL REJECT -->
+<div class="modal-overlay" id="modal-reject">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('modal-reject')">✕</button>
+    <div class="modal-title">Rechazar solicitud</div>
+    <div class="form-group">
+      <label class="form-label">Motivo del rechazo (opcional)</label>
+      <textarea class="form-control" id="reject-reason" placeholder="Ingresa el motivo..." rows="3"></textarea>
+    </div>
+    <button class="btn btn-danger" style="width:100%" onclick="confirmReject()">Confirmar rechazo</button>
+  </div>
+</div>
+
+<!-- MODAL OLVIDÉ CLAVE -->
+<div class="modal-overlay" id="modal-forgot">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('modal-forgot')">✕</button>
+    <div class="modal-title">¿Olvidaste tu clave?</div>
+    <div class="alert alert-info">📧 Ingresa tu RUT y te enviaremos un correo con tu clave de acceso.</div>
+    <div class="form-group">
+      <label class="form-label">Tu RUT</label>
+      <input class="form-control" id="forgot-rut" type="text" placeholder="Ej: 18594079-9">
+    </div>
+    <button class="btn btn-primary" onclick="sendForgotEmail()">Enviar correo de recuperación 📧</button>
+    <div class="make-notice">⚙️ Requiere configurar Make.com. Instrucciones en el README incluido.</div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   CONFIG
+   ================================================================ */
+const AT_TOKEN = localStorage.getItem('vaca_token') || '';
+const AT_BASE    = 'appteOyk8MXEIgSD7';
+const AT_WORKERS = 'Trabajadores';
+const AT_SOLS    = 'SolicitudesVacaciones';
+const AT_API     = 'https://api.airtable.com/v0';
+const ADMIN_PWD  = 'admin123';
+const ADMIN_EMAIL= 'Sindyolea@gmail.com';
+const ADMIN_WSP  = '56982925495';
+
+// Make.com webhooks — pega las URLs cuando las tengas
+const MAKE_SOLICITUD  = ''; // webhook nueva solicitud
+const MAKE_RESOLUCION = ''; // webhook aprobacion/rechazo
+const MAKE_FORGOT     = ''; // webhook recuperar clave
+
+/* ================================================================
+   ESTADO
+   ================================================================ */
+let workersCache = [], requestsCache = [], selectedWorker = null;
+let adminLocalFilter = 'todos', adminStatusFilter = 'todos', adminWorkerSearch = '', rejectTargetId = null;
+
+/* ================================================================
+   AIRTABLE
+   ================================================================ */
+async function atFetch(path, opts = {}) {
+  const res = await fetch(`${AT_API}/${AT_BASE}/${path}`, {
+    ...opts,
+    headers: { 'Authorization': `Bearer ${AT_TOKEN}`, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || `Error ${res.status}`); }
+  return res.json();
+}
+
+async function fetchAll(table) {
+  let records = [], offset = '';
+  do {
+    const data = await atFetch(`${table}?pageSize=100${offset?'&offset='+offset:''}`);
+    records = records.concat(data.records || []);
+    offset = data.offset || '';
+  } while(offset);
+  return records;
+}
+
+/* ================================================================
+   NORMALIZAR
+   ================================================================ */
+function nw(r) {
+  const f = r.fields || {};
+  return {
+    id: r.id,
+    nombre: f.Nombre || '—',
+    rut: f.RUT || '—',
+    contrato: f.Contrato || '—',
+    inicioContrato: f.InicioContrato || f['Inicio contrato'] || null,
+    finContrato: f.FinContrato || f['Fin de contrato'] || null,
+    horas: Number(f.Horas || 0),
+    local: f.Local || '—',
+    estado: f.Estado || 'Activo',
+    mail: f.Mail || f.mail || '',
+    celular: f.Celular || f.celular || '',
+    jornada: f.Jornada || f['Jornada de trabajo'] || '—',
+    diasUsados: Number(f.DiasUsados || 0),
+    clave: String(f.Clave || ''),
+    observaciones: f.Observaciones || ''
+  };
+}
+
+function ns(r) {
+  const f = r.fields || {};
+  return {
+    id: r.id,
+    workerId: f.IDTrabajador || '',
+    nombreTrabajador: f.NombreTrabajador || '',
+    rut: f.RUT || '',
+    local: f.Local || '',
+    fechaSolicitud: f.FechaSolicitud || '',
+    fechaInicio: f.FechaInicio || '',
+    fechaFin: f.FechaFin || '',
+    diasSolicitados: Number(f.DiasSolicitados || 0),
+    estado: (f.Estado || 'Pendiente').toLowerCase(),
+    comentarioTrabajador: f.ComentarioTrabajador || '',
+    comentarioAdmin: f.ComentarioAdmin || '',
+    fechaResolucion: f.FechaResolucion || null,
+    aprobadoPor: f.AprobadoPor || ''
+  };
+}
+
+/* ================================================================
+   CARGAR
+   ================================================================ */
+async function loadAllData() {
+  showLoading('Conectando con Airtable...');
+  try {
+    const [w, s] = await Promise.all([fetchAll(AT_WORKERS), fetchAll(AT_SOLS)]);
+    workersCache = w.map(nw);
+    requestsCache = s.map(ns);
+  } finally { hideLoading(); }
+}
+
+/* ================================================================
+   UTILS
+   ================================================================ */
+function monthsWorked(d) {
+  if (!d) return 0;
+  const s = new Date(d), n = new Date();
+  return Math.max(0, (n.getFullYear()-s.getFullYear())*12+(n.getMonth()-s.getMonth()));
+}
+
+function calcVac(w) {
+  const acum = Math.floor(monthsWorked(w.inicioContrato) * 1.25);
+  const pend = requestsCache.filter(r=>r.workerId===w.id&&r.estado==='pendiente').reduce((s,r)=>s+r.diasSolicitados,0);
+  const disp = Math.max(0, acum - w.diasUsados - pend);
+  return { acum, usado: w.diasUsados, pend, disp };
+}
+
+function fmtDate(d) { if(!d) return '—'; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
+
+function bizDays(s, e) {
+  if (!s||!e) return 0;
+  const start=new Date(s), end=new Date(e);
+  if (end<start) return 0;
+  let c=0, cur=new Date(start);
+  while(cur<=end){if(cur.getDay()!==0&&cur.getDay()!==6)c++;cur.setDate(cur.getDate()+1);}
+  return c;
+}
+
+function initials(n) { const p=n.split(' '); return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase(); }
+
+function sBadge(e) {
+  const m={pendiente:['badge-pending','⏳ Pendiente'],aprobada:['badge-approved','✅ Aprobada'],rechazada:['badge-rejected','❌ Rechazada']};
+  const [c,l]=m[e]||['','e']; return `<span class="badge ${c}">${l}</span>`;
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function remitente(local) { return local==='Pajaritos'?'RRHH DPC Pajaritos':'RRHH DPC Plaza Oeste'; }
+
+function showLoading(t='Cargando...') { document.getElementById('loading-text').textContent=t; document.getElementById('loading').style.display='flex'; }
+function hideLoading() { document.getElementById('loading').style.display='none'; }
+
+function showToast(msg, type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.className='toast',3200);
+}
+
+function togglePwd(id, btn) {
+  const i=document.getElementById(id);
+  i.type=i.type==='password'?'text':'password';
+  btn.textContent=i.type==='password'?'👁️':'🙈';
+}
+
+/* ================================================================
+   MAKE WEBHOOKS
+   ================================================================ */
+async function triggerMake(url, data) {
+  if (!url) return;
+  try { await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); }
+  catch(e) { console.warn('Make error:', e.message); }
+}
+
+async function notifySolicitud(w, sol) {
+  await triggerMake(MAKE_SOLICITUD, {
+    tipo: 'nueva_solicitud', remitente: remitente(w.local),
+    trabajador: { nombre:w.nombre, rut:w.rut, local:w.local, mail:w.mail, celular:w.celular },
+    solicitud: { inicio:sol.fechaInicio, fin:sol.fechaFin, dias:sol.diasSolicitados, comentario:sol.comentarioTrabajador },
+    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP }
+  });
+}
+
+async function notifyResolucion(w, sol) {
+  await triggerMake(MAKE_RESOLUCION, {
+    tipo: 'resolucion', remitente: remitente(w.local), estado: sol.estado,
+    trabajador: { nombre:w.nombre, rut:w.rut, local:w.local, mail:w.mail, celular:w.celular },
+    solicitud: { inicio:sol.fechaInicio, fin:sol.fechaFin, dias:sol.diasSolicitados },
+    comentarioAdmin: sol.comentarioAdmin,
+    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP }
+  });
+}
+
+/* ================================================================
+   ROUTING
+   ================================================================ */
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function setNavActive(el) { el.closest('.bottom-nav').querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+/* ================================================================
+   LOGIN
+   ================================================================ */
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(tab==='worker'&&i===0)||(tab==='admin'&&i===1)));
+  document.getElementById('ls-worker').classList.toggle('active',tab==='worker');
+  document.getElementById('ls-admin').classList.toggle('active',tab==='admin');
+}
+
+function filterWorkerList(q) {
+  selectedWorker=null;
+  document.getElementById('worker-selected-info').style.display='none';
+  const box=document.getElementById('worker-suggestions');
+  if(!q||q.length<2){box.innerHTML='';return;}
+  const lq=q.toLowerCase();
+  const matches=workersCache.filter(w=>w.nombre.toLowerCase().includes(lq)||w.rut.replace(/[\.\-]/g,'').includes(lq.replace(/[\.\-]/g,'')));
+  if(!matches.length){box.innerHTML=`<div style="padding:12px;font-size:13px;color:var(--text-soft);text-align:center;">No encontrado</div>`;return;}
+  box.innerHTML=matches.map(w=>`
+    <div onclick="selectWorker('${w.id}')" style="padding:11px 13px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .2s;"
+      onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${initials(w.nombre)}</div>
+      <div><div style="font-size:13px;font-weight:600;">${w.nombre}</div><div style="font-size:11px;color:var(--text-soft);">${w.local}</div></div>
+    </div>`).join('');
+}
+
+function selectWorker(id) {
+  const w=workersCache.find(x=>x.id===id); if(!w) return;
+  selectedWorker=w;
+  document.getElementById('worker-search').value=w.nombre;
+  document.getElementById('worker-suggestions').innerHTML='';
+  document.getElementById('worker-selected-name').textContent=w.nombre;
+  document.getElementById('worker-selected-local').textContent=`${w.local} · ${w.rut}`;
+  document.getElementById('worker-selected-info').style.display='block';
+}
+
+function goToPasswordStep() {
+  if(!selectedWorker){showToast('Selecciona tu nombre primero','error');return;}
+  document.getElementById('step-search').classList.remove('active');
+  document.getElementById('step-password').classList.add('active');
+  document.getElementById('step2-name').textContent=selectedWorker.nombre.split(' ').slice(0,2).join(' ');
+  document.getElementById('worker-password').value='';
+  setTimeout(()=>document.getElementById('worker-password').focus(),150);
+}
+
+function goBackToSearch() {
+  document.getElementById('step-password').classList.remove('active');
+  document.getElementById('step-search').classList.add('active');
+}
+
+function loginWorker() {
+  if(!selectedWorker) return;
+  const pwd=document.getElementById('worker-password').value.trim();
+  if(!pwd){showToast('Ingresa tu clave','error');return;}
+  if(String(pwd)!==String(selectedWorker.clave)){
+    showToast('Clave incorrecta','error');
+    document.getElementById('worker-password').value='';
+    return;
+  }
+  loadWorkerView(selectedWorker);
+  showScreen('screen-worker');
+}
+
+function loginAdmin() {
+  if(document.getElementById('admin-password').value!==ADMIN_PWD){showToast('Contraseña incorrecta','error');return;}
+  loadAdminView(); showScreen('screen-admin');
+}
+
+function logout() {
+  selectedWorker=null;
+  ['worker-search','worker-password','admin-password','pwd-current','pwd-new','pwd-confirm'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('worker-selected-info').style.display='none';
+  document.getElementById('step-password').classList.remove('active');
+  document.getElementById('step-search').classList.add('active');
+  showScreen('screen-login');
+}
+
+function openForgotModal() {
+  document.getElementById('forgot-rut').value=selectedWorker?.rut||'';
+  document.getElementById('modal-forgot').classList.add('open');
+}
+
+async function sendForgotEmail() {
+  const rut=document.getElementById('forgot-rut').value.trim();
+  if(!rut){showToast('Ingresa tu RUT','error');return;}
+  const w=workersCache.find(w=>w.rut.replace(/[\.\-]/g,'')===rut.replace(/[\.\-]/g,''));
+  if(!w){showToast('RUT no encontrado','error');return;}
+  if(!w.mail){showToast('Sin correo registrado. Contacta a tu administradora.','error');return;}
+  if(MAKE_FORGOT){
+    await triggerMake(MAKE_FORGOT,{nombre:w.nombre,mail:w.mail,rut:w.rut,clave:w.clave,remitente:remitente(w.local)});
+    showToast('📧 Correo enviado a '+w.mail,'success');
+  } else {
+    showToast('⚙️ Configura Make.com para activar esta función','info');
+  }
+  closeModal('modal-forgot');
+}
+
+/* ================================================================
+   VISTA TRABAJADOR
+   ================================================================ */
+function loadWorkerView(w) {
+  const {acum,usado,disp}=calcVac(w);
+  document.getElementById('w-greeting-name').textContent=w.nombre.split(' ')[0];
+  document.getElementById('w-stat-acum').textContent=acum;
+  document.getElementById('w-stat-used').textContent=usado;
+  document.getElementById('w-stat-avail').textContent=disp;
+  document.getElementById('w-local').textContent=w.local;
+  document.getElementById('w-contrato').textContent=w.contrato;
+  document.getElementById('w-inicio').textContent=fmtDate(w.inicioContrato);
+  document.getElementById('w-jornada').textContent=w.jornada;
+  document.getElementById('w-horas').textContent=w.horas?`${w.horas} hrs/semana`:'—';
+  document.getElementById('w-estado').innerHTML=`<span class="badge ${w.estado==='Activo'?'badge-active':'badge-inactive'}">${w.estado}</span>`;
+  const off=w.estado!=='Activo'||disp<=0;
+  document.getElementById('w-inactive-alert').style.display=w.estado!=='Activo'?'flex':'none';
+  document.getElementById('w-no-days-alert').style.display=(w.estado==='Activo'&&disp<=0)?'flex':'none';
+  document.getElementById('w-form-card').style.cssText+=off?';opacity:.5;pointer-events:none':'';
+  if(!off) document.getElementById('w-form-card').style.cssText=document.getElementById('w-form-card').style.cssText.replace(/opacity:[^;]+;pointer-events:[^;]+/,'');
+  const t=today();
+  document.getElementById('w-fecha-inicio').min=t;
+  document.getElementById('w-fecha-fin').min=t;
+  renderWorkerRequests(w.id);
+}
+
+function wTab(tab) {
+  const tabs=['info','solicitar','historial','cuenta'];
+  document.querySelectorAll('#screen-worker .tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
+  tabs.forEach(t=>document.getElementById(`w-tab-${t}`).classList.toggle('active',t===tab));
+}
+
+function calcDays() {
+  document.getElementById('w-dias-sol').value=bizDays(document.getElementById('w-fecha-inicio').value,document.getElementById('w-fecha-fin').value);
+}
+
+async function submitRequest() {
+  const w=selectedWorker; if(!w) return;
+  const inicio=document.getElementById('w-fecha-inicio').value;
+  const fin=document.getElementById('w-fecha-fin').value;
+  const dias=parseInt(document.getElementById('w-dias-sol').value)||0;
+  const comment=document.getElementById('w-comment').value.trim();
+  if(!inicio||!fin){showToast('Selecciona las fechas','error');return;}
+  if(fin<inicio){showToast('La fecha de término debe ser posterior','error');return;}
+  if(dias<=0){showToast('El período debe incluir días hábiles','error');return;}
+  const {disp}=calcVac(w);
+  if(dias>disp){showToast(`Solo tienes ${disp} días disponibles`,'error');return;}
+  const btn=document.getElementById('w-submit-btn');
+  btn.disabled=true; btn.textContent='Enviando...';
+  showLoading('Guardando solicitud...');
+  try {
+    const rec=await atFetch(AT_SOLS,{method:'POST',body:JSON.stringify({fields:{
+      IDTrabajador:w.id, NombreTrabajador:w.nombre, RUT:w.rut, Local:w.local,
+      FechaSolicitud:today(), FechaInicio:inicio, FechaFin:fin, DiasSolicitados:dias,
+      Estado:'Pendiente', ComentarioTrabajador:comment, ComentarioAdmin:'', AprobadoPor:''
+    }})});
+    const sol=ns(rec);
+    requestsCache.unshift(sol);
+    await notifySolicitud(w,sol);
+    ['w-fecha-inicio','w-fecha-fin','w-dias-sol','w-comment'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    loadWorkerView(w); wTab('historial');
+    showToast('✅ Solicitud enviada. Recibirás confirmación por correo.','success');
+    updatePendingBadge();
+  } catch(e){showToast('Error: '+e.message,'error');}
+  finally{hideLoading();btn.disabled=false;btn.textContent='Enviar solicitud 📨';}
+}
+
+function renderWorkerRequests(wid) {
+  const list=requestsCache.filter(r=>r.workerId===wid);
+  const el=document.getElementById('w-requests-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin solicitudes</div><div class="empty-sub">Aparecerán aquí</div></div>`;return;}
+  el.innerHTML=list.map(r=>`
+    <div class="solicitud-card">
+      <div class="solicitud-header"><div><div class="solicitud-sub">Solicitado el ${fmtDate(r.fechaSolicitud)}</div></div>${sBadge(r.estado)}</div>
+      <div class="solicitud-dates"><span class="date-chip">${fmtDate(r.fechaInicio)}</span><span style="color:var(--text-soft)">→</span><span class="date-chip">${fmtDate(r.fechaFin)}</span><span class="days-badge">${r.diasSolicitados} días</span></div>
+      ${r.comentarioTrabajador?`<div class="comment-box">💬 "${r.comentarioTrabajador}"</div>`:''}
+      ${r.comentarioAdmin?`<div class="comment-box" style="background:var(--green-bg);border:1px solid var(--green-border);font-style:normal;"><span style="font-size:11px;font-weight:600;color:var(--green);">Admin:</span> ${r.comentarioAdmin}</div>`:''}
+    </div>`).join('');
+}
+
+/* ================================================================
+   CAMBIAR CLAVE
+   ================================================================ */
+async function changePassword() {
+  const w=selectedWorker; if(!w) return;
+  const cur=document.getElementById('pwd-current').value.trim();
+  const nw_=document.getElementById('pwd-new').value.trim();
+  const conf=document.getElementById('pwd-confirm').value.trim();
+  if(!cur||!nw_||!conf){showToast('Completa todos los campos','error');return;}
+  if(String(cur)!==String(w.clave)){showToast('La clave actual es incorrecta','error');return;}
+  if(nw_.length<4){showToast('La nueva clave debe tener al menos 4 caracteres','error');return;}
+  if(nw_!==conf){showToast('Las claves nuevas no coinciden','error');return;}
+  const btn=document.getElementById('change-pwd-btn');
+  btn.disabled=true; btn.textContent='Guardando...';
+  showLoading('Actualizando clave...');
+  try {
+    await atFetch(`${AT_WORKERS}/${w.id}`,{method:'PATCH',body:JSON.stringify({fields:{Clave:nw_}})});
+    w.clave=nw_;
+    ['pwd-current','pwd-new','pwd-confirm'].forEach(id=>document.getElementById(id).value='');
+    showToast('🔐 Clave actualizada correctamente','success');
+  } catch(e){showToast('Error: '+e.message,'error');}
+  finally{hideLoading();btn.disabled=false;btn.textContent='Guardar nueva clave 🔐';}
+}
+
+/* ================================================================
+   VISTA ADMIN
+   ================================================================ */
+function loadAdminView(){renderAdminPending();renderAdminWorkers();renderAdminHistory();updatePendingBadge();}
+
+function aTab(tab){
+  const tabs=['pendientes','trabajadores','historial'];
+  document.querySelectorAll('#screen-admin .tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
+  tabs.forEach(t=>document.getElementById(`a-tab-${t}`).classList.toggle('active',t===tab));
+}
+
+function updatePendingBadge(){
+  const c=requestsCache.filter(r=>r.estado==='pendiente').length;
+  ['pending-badge','nav-pending-dot'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=c?'block':'none';});
+  const el=document.getElementById('a-pending-count');if(el)el.textContent=c;
+}
+
+function renderAdminPending(){
+  const pending=requestsCache.filter(r=>r.estado==='pendiente');
+  const el=document.getElementById('a-pending-list');
+  if(!pending.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Sin pendientes</div><div class="empty-sub">Todo al día</div></div>`;return;}
+  el.innerHTML=pending.map(r=>`
+    <div class="solicitud-card">
+      <div class="solicitud-header"><div><div class="solicitud-name">${r.nombreTrabajador}</div><div class="solicitud-sub">${r.local} · ${r.rut}</div></div>${sBadge(r.estado)}</div>
+      <div class="solicitud-dates"><span class="date-chip">${fmtDate(r.fechaInicio)}</span><span style="color:var(--text-soft)">→</span><span class="date-chip">${fmtDate(r.fechaFin)}</span><span class="days-badge">${r.diasSolicitados} días</span></div>
+      ${r.comentarioTrabajador?`<div class="comment-box">💬 "${r.comentarioTrabajador}"</div>`:''}
+      <div class="solicitud-actions">
+        <button class="btn btn-approve" onclick="approveRequest('${r.id}')">✅ Aprobar</button>
+        <button class="btn btn-reject" onclick="openRejectModal('${r.id}')">❌ Rechazar</button>
+      </div>
+    </div>`).join('');
+}
+
+async function approveRequest(id){
+  const req=requestsCache.find(r=>r.id===id);if(!req)return;
+  const w=workersCache.find(x=>x.id===req.workerId);
+  showLoading('Aprobando...');
+  try{
+    await atFetch(`${AT_SOLS}/${id}`,{method:'PATCH',body:JSON.stringify({fields:{Estado:'Aprobada',FechaResolucion:today(),AprobadoPor:'Administradora',ComentarioAdmin:'Aprobado.'}})});
+    if(w){
+      const nd=w.diasUsados+req.diasSolicitados;
+      await atFetch(`${AT_WORKERS}/${w.id}`,{method:'PATCH',body:JSON.stringify({fields:{DiasUsados:nd}})});
+      w.diasUsados=nd;
+    }
+    req.estado='aprobada';req.fechaResolucion=today();req.aprobadoPor='Administradora';req.comentarioAdmin='Aprobado.';
+    if(w)await notifyResolucion(w,req);
+    loadAdminView();
+    showToast('✅ Aprobada — notificación enviada','success');
+  }catch(e){showToast('Error: '+e.message,'error');}
+  finally{hideLoading();}
+}
+
+function openRejectModal(id){rejectTargetId=id;document.getElementById('reject-reason').value='';document.getElementById('modal-reject').classList.add('open');}
+
+async function confirmReject(){
+  const req=requestsCache.find(r=>r.id===rejectTargetId);if(!req)return;
+  const motivo=document.getElementById('reject-reason').value.trim()||'Rechazado.';
+  const w=workersCache.find(x=>x.id===req.workerId);
+  closeModal('modal-reject');
+  showLoading('Rechazando...');
+  try{
+    await atFetch(`${AT_SOLS}/${rejectTargetId}`,{method:'PATCH',body:JSON.stringify({fields:{Estado:'Rechazada',FechaResolucion:today(),AprobadoPor:'Administradora',ComentarioAdmin:motivo}})});
+    req.estado='rechazada';req.fechaResolucion=today();req.aprobadoPor='Administradora';req.comentarioAdmin=motivo;
+    if(w)await notifyResolucion(w,req);
+    loadAdminView();
+    showToast('Rechazada — notificación enviada','error');
+  }catch(e){showToast('Error: '+e.message,'error');}
+  finally{hideLoading();}
+}
+
+function setLocalFilter(el,val){document.querySelectorAll('#a-filter-row .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');adminLocalFilter=val;renderAdminWorkers();}
+function filterAdminWorkers(q){adminWorkerSearch=q.toLowerCase();renderAdminWorkers();}
+
+function renderAdminWorkers(){
+  let list=workersCache;
+  if(adminLocalFilter==='Inactivos')list=list.filter(w=>w.estado==='Inactivo');
+  else if(adminLocalFilter!=='todos')list=list.filter(w=>w.local===adminLocalFilter&&w.estado==='Activo');
+  if(adminWorkerSearch)list=list.filter(w=>w.nombre.toLowerCase().includes(adminWorkerSearch)||w.rut.replace(/[\.\-]/g,'').includes(adminWorkerSearch.replace(/[\.\-]/g,'')));
+  document.getElementById('a-workers-count').textContent=list.length;
+  const el=document.getElementById('a-workers-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Sin resultados</div></div>`;return;}
+  el.innerHTML=list.map(w=>{
+    const {disp}=calcVac(w);
+    const p=requestsCache.filter(r=>r.workerId===w.id&&r.estado==='pendiente').length;
+    return `<div class="worker-row" onclick="openWorkerModal('${w.id}')">
+      <div class="avatar">${initials(w.nombre)}</div>
+      <div class="worker-info">
+        <div class="worker-name-row"><span class="worker-fullname">${w.nombre}</span>${p>0?`<span class="badge badge-pending" style="font-size:10px;padding:2px 7px;">${p} pend.</span>`:''}</div>
+        <div class="worker-meta">${w.local} · ${w.contrato}${w.estado==='Inactivo'?' · <span style="color:var(--red)">Inactivo</span>':''}</div>
+      </div>
+      <div class="worker-days"><div class="worker-days-num" style="${disp<=3?'color:var(--yellow);':''}">${disp}</div><div class="worker-days-label">disponibles</div></div>
+    </div>`;
+  }).join('');
+}
+
+function setStatusFilter(el,val){el.closest('.filter-row').querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');adminStatusFilter=val;renderAdminHistory();}
+function filterAdminHistory(q){renderAdminHistory(q.toLowerCase());}
+
+function renderAdminHistory(search=''){
+  let list=[...requestsCache].sort((a,b)=>b.fechaSolicitud.localeCompare(a.fechaSolicitud));
+  if(adminStatusFilter!=='todos')list=list.filter(r=>r.estado===adminStatusFilter);
+  if(search)list=list.filter(r=>r.nombreTrabajador.toLowerCase().includes(search)||r.rut.includes(search));
+  const el=document.getElementById('a-history-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin solicitudes</div></div>`;return;}
+  el.innerHTML=list.map(r=>`
+    <div class="solicitud-card">
+      <div class="solicitud-header"><div><div class="solicitud-name">${r.nombreTrabajador}</div><div class="solicitud-sub">${r.local} · ${fmtDate(r.fechaSolicitud)}</div></div>${sBadge(r.estado)}</div>
+      <div class="solicitud-dates"><span class="date-chip">${fmtDate(r.fechaInicio)}</span><span style="color:var(--text-soft)">→</span><span class="date-chip">${fmtDate(r.fechaFin)}</span><span class="days-badge">${r.diasSolicitados} días</span></div>
+      ${r.comentarioAdmin?`<div class="comment-box" style="font-style:normal;"><span style="font-size:11px;font-weight:600;">Resolución:</span> ${r.comentarioAdmin}</div>`:''}
+    </div>`).join('');
+}
+
+function openWorkerModal(id){
+  const w=workersCache.find(x=>x.id===id);if(!w)return;
+  const {acum,usado,disp}=calcVac(w);
+  const wReqs=requestsCache.filter(r=>r.workerId===id);
+  document.getElementById('modal-w-name').textContent=w.nombre;
+  document.getElementById('modal-w-content').innerHTML=`
+    <div class="stats-row" style="margin-bottom:16px;">
+      <div class="stat-box"><div class="stat-num">${acum}</div><div class="stat-label">Acumulados</div></div>
+      <div class="stat-box"><div class="stat-num">${usado}</div><div class="stat-label">Usados</div></div>
+      <div class="stat-box accent"><div class="stat-num">${disp}</div><div class="stat-label">Disponibles</div></div>
+    </div>
+    <div class="card" style="animation:none;margin-bottom:12px;">
+      <div class="info-row"><span class="info-label">RUT</span><span class="info-value" style="font-family:var(--mono)">${w.rut}</span></div>
+      <div class="info-row"><span class="info-label">Local</span><span class="info-value">${w.local}</span></div>
+      <div class="info-row"><span class="info-label">Contrato</span><span class="info-value">${w.contrato}</span></div>
+      <div class="info-row"><span class="info-label">Inicio</span><span class="info-value">${fmtDate(w.inicioContrato)}</span></div>
+      <div class="info-row"><span class="info-label">Jornada</span><span class="info-value">${w.jornada} · ${w.horas} hrs</span></div>
+      <div class="info-row"><span class="info-label">Estado</span><span class="info-value"><span class="badge ${w.estado==='Activo'?'badge-active':'badge-inactive'}">${w.estado}</span></span></div>
+      <div class="info-row"><span class="info-label">Editar días usados</span>
+        <div class="edit-days-row"><input class="edit-days-input" type="number" id="edit-dias-${w.id}" value="${w.diasUsados}" min="0"><button class="btn btn-sm btn-secondary" onclick="saveEditDays('${w.id}')">Guardar</button></div>
+      </div>
+      <div class="info-row"><span class="info-label">Resetear clave</span>
+        <button class="btn btn-sm btn-secondary" onclick="resetClave('${w.id}')">Resetear a RUT</button>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Solicitudes (${wReqs.length})</div>
+    ${wReqs.length?wReqs.map(r=>`
+      <div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:12px;font-weight:600;">${fmtDate(r.fechaInicio)} → ${fmtDate(r.fechaFin)}</div><div style="font-size:11px;color:var(--text-soft);">${r.diasSolicitados} días</div></div>
+        ${sBadge(r.estado)}
+      </div>`).join(''):`<div style="font-size:13px;color:var(--text-soft);">Sin solicitudes.</div>`}
+    <div class="alert alert-warning" style="margin-top:14px;">⚠️ Días calculados con fórmula prototipo (meses × 1,25). Ajustar según normativa real.</div>`;
+  document.getElementById('modal-worker').classList.add('open');
+}
+
+async function saveEditDays(wid){
+  const w=workersCache.find(x=>x.id===wid);
+  const val=parseInt(document.getElementById(`edit-dias-${wid}`).value);
+  if(!w||isNaN(val)||val<0){showToast('Valor inválido','error');return;}
+  showLoading('Guardando...');
+  try{
+    await atFetch(`${AT_WORKERS}/${wid}`,{method:'PATCH',body:JSON.stringify({fields:{DiasUsados:val}})});
+    w.diasUsados=val;closeModal('modal-worker');renderAdminWorkers();showToast('✅ Días actualizados','success');
+  }catch(e){showToast('Error: '+e.message,'error');}finally{hideLoading();}
+}
+
+async function resetClave(wid){
+  const w=workersCache.find(x=>x.id===wid);if(!w)return;
+  const newC=w.rut.replace(/[\.\-]/g,'').replace(/[^0-9]/g,'').slice(0,4);
+  showLoading('Reseteando...');
+  try{
+    await atFetch(`${AT_WORKERS}/${wid}`,{method:'PATCH',body:JSON.stringify({fields:{Clave:newC}})});
+    w.clave=newC;showToast(`🔐 Clave reseteada a ${newC}`,'success');
+  }catch(e){showToast('Error: '+e.message,'error');}finally{hideLoading();}
+}
+
+/* ================================================================
+   SETUP — guardar token
+   ================================================================ */
+function saveSetup() {
+  const token = document.getElementById('setup-token').value.trim();
+  if (!token || !token.startsWith('pat')) {
+    showToast('Token inválido — debe empezar con "pat"', 'error');
+    return;
+  }
+  localStorage.setItem('vaca_token', token);
+  localStorage.setItem('vaca_base', AT_BASE);
+  location.reload(); // recarga con el token guardado
+}
+
+function clearSetup() {
+  localStorage.removeItem('vaca_token');
+  location.reload();
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+(async()=>{
+  const token = localStorage.getItem('vaca_token');
+  if (!token) {
+    // Sin token — mostrar pantalla de configuración
+    showScreen('screen-setup');
+    return;
+  }
+  try{
+    await loadAllData();
+    showToast('✅ Datos cargados','success');
+  } catch(e){
+    hideLoading();
+    // Si el token es inválido, mostrar setup de nuevo
+    if (e.message.includes('403') || e.message.includes('401') || e.message.includes('invalid')) {
+      localStorage.removeItem('vaca_token');
+      showToast('Token inválido. Vuelve a configurar.','error');
+      setTimeout(()=>showScreen('screen-setup'), 1500);
+    } else {
+      showToast('Error Airtable: '+e.message,'error');
+    }
+  }
+})();
+</script>
+</body>
+</html>
