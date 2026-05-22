@@ -841,7 +841,7 @@ async function submitRequest() {
   try {
     const rec=await atFetch(AT_SOLS,{method:'POST',body:JSON.stringify({fields:{
       IDTrabajador:w.id, NombreTrabajador:w.nombre, RUT:w.rut, Local:w.local,
-      FechaSolicitud:today(), FechaInicio:inicio, FechaFin:fin, DiasSolicitados:dias,
+      FechaSolicitud:today(), FechaInicio:inicio, FechaFin:fin, DiasSolicitados:parseInt(dias)||0,
       Estado:'Pendiente', ComentarioTrabajador:comment, ComentarioAdmin:'', AprobadoPor:''
     }})});
     const sol=ns(rec);
@@ -932,7 +932,7 @@ async function approveRequest(id){
   try{
     await atFetch(`${AT_SOLS}/${id}`,{method:'PATCH',body:JSON.stringify({fields:{Estado:'Aprobada',FechaResolucion:today(),AprobadoPor:'Administradora',ComentarioAdmin:'Aprobado.'}})});
     if(w){
-      const nd=w.diasUsados+req.diasSolicitados;
+      const nd=parseInt(w.diasUsados||0)+parseInt(req.diasSolicitados||0);
       await atFetch(`${AT_WORKERS}/${w.id}`,{method:'PATCH',body:JSON.stringify({fields:{DiasUsados:nd}})});
       w.diasUsados=nd;
     }
@@ -1083,9 +1083,13 @@ function clearSetup() {
    INIT
    ================================================================ */
 (async()=>{
+  // Token embebido como fallback — los trabajadores nunca ven el setup
+  const FALLBACK_TOKEN = atob('cGF0TDdDTm93TkhvWDZwQXcuN2U0YzdlNmZhZGJlZmJmYzBkYThlMjEwOGQwYzQ1NTdkYzhlMTJkMzYxOTMzYTQzN2QyYmVjNTg1ZWMwMzU5MQ==');
+  if (!localStorage.getItem('vaca_token')) {
+    localStorage.setItem('vaca_token', FALLBACK_TOKEN);
+  }
   const token = localStorage.getItem('vaca_token');
   if (!token) {
-    // Sin token — mostrar pantalla de configuración
     showScreen('screen-setup');
     return;
   }
