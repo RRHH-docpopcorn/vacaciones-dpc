@@ -663,11 +663,13 @@ function togglePwd(id, btn) {
 async function triggerMake(url, data) {
   if (!url) return;
   try {
+    // Usar URLSearchParams para evitar CORS preflight
+    const params = new URLSearchParams();
+    params.append('data', JSON.stringify(data));
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
+      body: params
     });
   } catch(e) { console.warn('Make error:', e.message); }
 }
