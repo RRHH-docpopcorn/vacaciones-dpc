@@ -662,8 +662,14 @@ function togglePwd(id, btn) {
    ================================================================ */
 async function triggerMake(url, data) {
   if (!url) return;
-  try { await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); }
-  catch(e) { console.warn('Make error:', e.message); }
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e) { console.warn('Make error:', e.message); }
 }
 
 async function notifySolicitud(w, sol) {
