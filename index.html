@@ -663,35 +663,51 @@ function togglePwd(id, btn) {
 async function triggerMake(url, data) {
   if (!url) return;
   try {
-    // Usar URLSearchParams para evitar CORS preflight
-    const params = new URLSearchParams();
-    params.append('data', JSON.stringify(data));
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
-      body: params
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify(data)
     });
   } catch(e) { console.warn('Make error:', e.message); }
 }
 
 async function notifySolicitud(w, sol) {
   await triggerMake(MAKE_SOLICITUD, {
-    tipo: 'nueva_solicitud', remitente: remitente(w.local),
-    trabajador: { nombre:w.nombre, rut:w.rut, local:w.local, mail:w.mail, celular:w.celular },
-    solicitud: { inicio:sol.fechaInicio, fin:sol.fechaFin, dias:sol.diasSolicitados, comentario:sol.comentarioTrabajador },
-    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP },
-    appUrl: APP_URL
+    tipo: 'nueva_solicitud',
+    remitente: remitente(w.local),
+    trabajador_nombre: w.nombre,
+    trabajador_rut: w.rut,
+    trabajador_local: w.local,
+    trabajador_mail: w.mail,
+    trabajador_celular: w.celular,
+    solicitud_inicio: sol.fechaInicio,
+    solicitud_fin: sol.fechaFin,
+    solicitud_dias: sol.diasSolicitados,
+    solicitud_comentario: sol.comentarioTrabajador,
+    admin_mail: ADMIN_EMAIL,
+    admin_wsp: ADMIN_WSP,
+    app_url: APP_URL
   });
 }
 
 async function notifyResolucion(w, sol) {
   await triggerMake(MAKE_RESOLUCION, {
-    tipo: 'resolucion', remitente: remitente(w.local), estado: sol.estado,
-    trabajador: { nombre:w.nombre, rut:w.rut, local:w.local, mail:w.mail, celular:w.celular },
-    solicitud: { inicio:sol.fechaInicio, fin:sol.fechaFin, dias:sol.diasSolicitados },
-    comentarioAdmin: sol.comentarioAdmin,
-    admin: { mail:ADMIN_EMAIL, wsp:ADMIN_WSP },
-    appUrl: APP_URL
+    tipo: 'resolucion',
+    remitente: remitente(w.local),
+    estado: sol.estado,
+    trabajador_nombre: w.nombre,
+    trabajador_rut: w.rut,
+    trabajador_local: w.local,
+    trabajador_mail: w.mail,
+    trabajador_celular: w.celular,
+    solicitud_inicio: sol.fechaInicio,
+    solicitud_fin: sol.fechaFin,
+    solicitud_dias: sol.diasSolicitados,
+    comentario_admin: sol.comentarioAdmin,
+    admin_mail: ADMIN_EMAIL,
+    admin_wsp: ADMIN_WSP,
+    app_url: APP_URL
   });
 }
 
