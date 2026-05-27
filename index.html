@@ -156,7 +156,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
 @media(min-width:640px){.container{padding:28px 24px 80px;}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init("LpOJ7lX_KvU_qE0fK");</script>
+
 </head>
 <body>
 
@@ -507,6 +507,8 @@ textarea.form-control{resize:vertical;min-height:80px;}
 /* ================================================================
    CONFIG
    ================================================================ */
+// Inicializar EmailJS
+window.addEventListener('load', () => { emailjs.init("LpOJ7lX_KvU_qE0fK"); });
 const AT_TOKEN = 'patL7CNowNHoX6pAw.7e4c7e6fadbefbfc0da8e2108d0c4557dc8e12d361933a437d2bec585ec03591';
 const AT_BASE    = 'appteOyk8MXEIgSD7';
 const AT_WORKERS = 'Trabajadores';
