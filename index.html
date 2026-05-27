@@ -681,7 +681,8 @@ async function triggerMake(url, data) {
 
 async function notifySolicitud(w, sol) {
   const rem = remitente(w.local);
-  const params = {
+  // Correo al trabajador
+  const paramsWorker = {
     to_email: w.mail,
     trabajador_nombre: w.nombre,
     trabajador_local: w.local,
@@ -690,39 +691,29 @@ async function notifySolicitud(w, sol) {
     solicitud_dias: sol.diasSolicitados,
     remitente: rem
   };
+  // Correo al admin (plantilla flexible)
   const paramsAdmin = {
     to_email: ADMIN_EMAIL,
-    trabajador_nombre: w.nombre,
-    trabajador_local: w.local,
-    solicitud_inicio: sol.fechaInicio,
-    solicitud_fin: sol.fechaFin,
-    solicitud_dias: sol.diasSolicitados,
-    solicitud_comentario: sol.comentarioTrabajador || 'Sin comentario',
-    trabajador_rut: w.rut,
-    app_url: APP_URL,
-    remitente: rem
+    asunto: '📨 Nueva solicitud - ' + w.nombre,
+    mensaje: `Nueva solicitud de vacaciones\n\nTrabajador: ${w.nombre}\nRUT: ${w.rut}\nLocal: ${w.local}\n\nInicio: ${sol.fechaInicio}\nTérmino: ${sol.fechaFin}\nDías: ${sol.diasSolicitados}\nComentario: ${sol.comentarioTrabajador || 'Sin comentario'}\n\nVer en VacaApp:\n${APP_URL}`
   };
   try {
-    if (w.mail) await emailjs.send(EJS_SERVICE, EJS_TPL_SOL, params);
-    await emailjs.send(EJS_SERVICE, EJS_TPL_SOL, paramsAdmin);
+    if (w.mail) await emailjs.send(EJS_SERVICE, EJS_TPL_SOL, paramsWorker);
+    await emailjs.send(EJS_SERVICE, EJS_TPL_RES, paramsAdmin);
   } catch(e) { console.warn('EmailJS error:', e); }
 }
 
 async function notifyResolucion(w, sol) {
   const estadoTexto = sol.estado === 'aprobada' ? '✅ APROBADA' : '❌ RECHAZADA';
-  const params = {
+  const rem = remitente(w.local);
+  // Correo al trabajador con resultado
+  const paramsWorker = {
     to_email: w.mail,
-    trabajador_nombre: w.nombre,
-    trabajador_local: w.local,
-    estado: estadoTexto,
-    solicitud_inicio: sol.fechaInicio,
-    solicitud_fin: sol.fechaFin,
-    solicitud_dias: sol.diasSolicitados,
-    comentario_admin: sol.comentarioAdmin || '',
-    remitente: remitente(w.local)
+    asunto: `Tu solicitud fue ${estadoTexto}`,
+    mensaje: `Hola ${w.nombre}\n\nTu solicitud de vacaciones fue ${estadoTexto}.\n\nInicio: ${sol.fechaInicio}\nTérmino: ${sol.fechaFin}\nDías: ${sol.diasSolicitados}\n\n${sol.comentarioAdmin ? 'Comentario: ' + sol.comentarioAdmin : ''}\n\n${rem}`
   };
   try {
-    if (w.mail) await emailjs.send(EJS_SERVICE, EJS_TPL_RES, params);
+    if (w.mail) await emailjs.send(EJS_SERVICE, EJS_TPL_RES, paramsWorker);
   } catch(e) { console.warn('EmailJS resolución error:', e); }
 }
 
