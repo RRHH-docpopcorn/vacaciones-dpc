@@ -961,6 +961,7 @@ function renderAdminPending(){
 async function approveRequest(id){
   const req=requestsCache.find(r=>r.id===id);if(!req)return;
   const w=workersCache.find(x=>x.id===req.workerId);
+  console.log('Worker al aprobar:', w?.nombre, '| mail:', w?.mail, '| workerId:', req.workerId);
   showLoading('Aprobando...');
   try{
     await atFetch(`${AT_SOLS}/${id}`,{method:'PATCH',body:JSON.stringify({fields:{Estado:'Aprobada',FechaResolucion:today(),AprobadoPor:'Administradora',ComentarioAdmin:'Aprobado.'}})});
